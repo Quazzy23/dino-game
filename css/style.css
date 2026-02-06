@@ -1,0 +1,893 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root {
+    --color-correct: #28a745; --color-correct-bg: rgba(40, 167, 69, 0.15);
+    --color-almost: #fd7e14;  --color-almost-bg: rgba(253, 126, 20, 0.15);
+    --color-incorrect: #dc3545; --color-incorrect-bg: rgba(220, 53, 69, 0.15);
+    --color-primary-light-theme: #007bff;
+    --color-primary-dark-theme: #4dabf7; 
+    --border-radius: 12px;
+}
+
+:root, html[data-theme="light"] {
+    --color-primary: var(--color-primary-light-theme);
+    --color-primary-bg: rgba(0, 123, 255, 0.2);
+    --color-bg: #f4f7fa;
+    --color-surface: #ffffff;
+    --color-text: #2c3e50;
+    --color-text-light: #5a6b7b;
+    --color-border: #e9ecef;
+    --color-button-secondary: #6c757d;
+    --color-button-secondary-rgb: 108, 117, 125;
+    --box-shadow-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="dark"] {
+    --color-primary: var(--color-primary-dark-theme);
+    --color-primary-bg: rgba(77, 171, 247, 0.2);
+    --color-bg: #1a1a2e;
+    --color-surface: #242444;
+    --color-text: #e0e0ff;
+    --color-text-light: #9a9ac8;
+    --color-border: #3a3a5a;
+    --color-button-secondary: #5a5a7a;
+    --color-button-secondary-rgb: 90, 90, 122;
+    --box-shadow-color: rgba(0, 0, 0, 0.2);
+}
+
+body { font-family: 'Inter', sans-serif; background-color: var(--color-bg); color: var(--color-text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
+.container { position: relative; background-color: var(--color-surface); padding: 30px 40px; border-radius: var(--border-radius); box-shadow: 0 8px 40px var(--box-shadow-color); width: 90%; max-width: 600px; text-align: center; transition: all 0.3s ease; max-height: 95vh;overflow-y: auto; scrollbar-gutter: stable; }       
+.container::-webkit-scrollbar {width: 10px;}
+.container::-webkit-scrollbar-track {background: transparent; border-radius: 10px;}
+.container::-webkit-scrollbar-thumb {background-color: var(--color-border);border-radius: 10px;border: 2px solid var(--color-surface); }
+.container::-webkit-scrollbar-thumb:hover {background-color: var(--color-button-secondary);}
+.container {scrollbar-width: thin;scrollbar-color: var(--color-button-secondary) transparent;}
+h1, h2, h3 { color: var(--color-text); }
+p { color: var(--color-text-light); line-height: 1.6; }
+#game-stats { display: flex; justify-content: space-between; font-weight: 600; margin-top: 10px; margin-bottom: 15px; }
+#game-mode-header { font-weight: 600; color: var(--color-text-light); margin-bottom: 0; }
+#game-instruction { margin-bottom: 5px; }
+.progress-bar-container { width: 100%; background-color: var(--color-border); border-radius: 20px; height: 10px; margin-bottom: 25px; overflow: hidden; }
+#progress-bar { width: 0%; height: 100%; background-color: var(--color-primary); border-radius: 20px; transition: width 0.4s ease-out; }
+#genus-name { font-weight: 700; color: var(--color-primary); font-size: 1.5em; display: block; margin: 10px 0 25px 0; }
+.species-input { width: calc(100% - 24px); padding: 12px; font-size: 1.1em; border: 2px solid var(--color-border); border-radius: 8px; text-align: center; transition: all 0.3s ease; background-color: var(--color-surface); color: var(--color-text); }
+.species-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-bg); outline: none; }
+#species-input-container { display: flex; flex-direction: column; gap: 10px; }
+#blitz-timer-display {
+    position: relative; /* Включаем режим относительного позиционирования */
+    top: 10px;          /* Сдвигаем элемент ВНИЗ от его исходной позиции */
+}
+button { padding: 12px 25px; font-size: 1em; font-weight: 600; color: #fff; background-color: var(--color-primary); border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; transition: all 0.2s ease; filter: brightness(1); }
+button:hover { filter: brightness(1.1); } 
+button:active { transform: scale(0.97); }
+button:disabled { background-color: #ccc; cursor: not-allowed; filter: none; }
+#next-button { background-color: var(--color-correct); }
+.button-group { display: flex; gap: 10px; justify-content: center; }
+.button-secondary { background-color: var(--color-button-secondary); }
+.stacked-button-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+@keyframes flash-bg-green { 50% { background-color: var(--color-correct-bg); border-color: var(--color-correct); } }
+@keyframes flash-bg-yellow { 50% { background-color: var(--color-almost-bg); border-color: var(--color-almost); } }
+@keyframes flash-bg-red { 50% { background-color: var(--color-incorrect-bg); border-color: var(--color-incorrect); } }
+.flash-correct { animation: flash-bg-green 0.7s ease-out; }
+.flash-almost { animation: flash-bg-yellow 0.7s ease-out; }
+.flash-incorrect { animation: flash-bg-red 0.7s ease-out; }
+@keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+.shake-input { animation: shake 0.5s ease-in-out; }
+.metric .metric-value,
+#final-verdict {
+    transform: translateZ(0);
+}
+
+#feedback-panel { margin-top: 25px; text-align: left; border-top: 1px solid var(--color-border); padding-top: 20px; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; max-height: 0; overflow: hidden; }
+#feedback-panel.visible { opacity: 1; transform: translateY(0); max-height: none; }
+#feedback-details-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
+.feedback-details { display: flex; justify-content: space-around; }
+.feedback-details-header { text-align: center; margin-bottom: 5px; }
+.metric { font-size: 0.9em; text-align: center; } 
+.metric > span:first-child { display: block; }
+.metric .metric-value { display: block; font-weight: 700; font-size: 1.2em; }
+.metric .correct-text { color: var(--color-correct); }
+.metric .almost-text { color: var(--color-almost); }
+.metric .incorrect-text { color: var(--color-incorrect); }
+#final-verdict { font-size: 1.1em; font-weight: 600; text-align: center; padding: 10px; border-radius: 8px; margin-top: 15px; }
+
+#results-table-container { 
+    margin-top: 25px; 
+    max-height: 300px; 
+    overflow-y: auto; 
+    text-align: left;
+    /* --- НАЧАЛО ДОБАВЛЕНИЯ --- */
+    padding-right: 5px; /* Небольшой отступ, чтобы текст не прилипал к скроллу */
+}
+
+#results-table-container::-webkit-scrollbar {
+    width: 12px;
+}
+#results-table-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+#results-table-container::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 10px;
+    border: 3px solid var(--color-surface);
+}
+#results-table-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-button-secondary);
+}
+#results-table-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-button-secondary) transparent;
+}
+/* --- КОНЕЦ ДОБАВЛЕНИЯ --- */
+#results-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+#results-table th, 
+#results-table td { 
+    padding: 10px; 
+    border-bottom: 1px solid var(--color-border); 
+}
+#results-table th { /* Стили ТОЛЬКО для заголовочных ячеек */
+    font-weight: 600; 
+    background-color: var(--color-surface);
+}
+#results-table th:first-child,
+#results-table td:first-child { /* Стили ТОЛЬКО для первой колонки */
+    text-align: left;
+}
+.text-correct { color: var(--color-correct); font-weight: 600; } .text-almost { color: var(--color-almost); font-weight: 600; } .text-incorrect { color: var(--color-incorrect); font-weight: 600; }
+.text-neutral { color: var(--color-text-light); }
+.score-cell { text-align: center; }
+
+.game-controls { 
+    display: flex; 
+    justify-content: flex-end; /* Прижимает вправо */
+    gap: 10px; 
+    margin-bottom: 15px;
+    
+    /* Сдвигаем контейнер с кнопками правее на N пикселей */
+    margin-right: -20px; 
+}
+.game-controls button { padding: 8px 15px; font-size: 0.9em; margin-top: 0; }
+#exit-to-menu-game-button { background-color: var(--color-incorrect); }
+#end-game-early-button { background-color: var(--color-text-light); }
+
+.db-list { list-style: none; padding: 0; margin: 10px 0 20px 0; text-align: left; }
+/* --- НАЧАЛО ДОБАВЛЕНИЯ --- */
+.db-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Создает отступ между элементами внутри этой группы */
+    margin-left: auto; /* Прижимает всю группу к правому краю */
+}
+/* --- КОНЕЦ ДОБАВЛЕНИЯ --- */
+.db-list li { display: flex; align-items: center; padding: 12px; border: 2px solid var(--color-border); border-radius: 8px; margin-bottom: 10px; transition: all 0.2s ease; position: relative; overflow: visible; }
+#custom-db-list li { cursor: grab; }
+#custom-db-list li.dragging, #custom-images-list li.dragging { opacity: 0.5; background: var(--color-primary-bg); }
+.db-name { flex-grow: 1; margin: 0 10px; min-width: 0; }
+.db-item-controls .delete-db-btn { background-color: var(--color-incorrect); color: white; border-radius: 50%; width: 28px; height: 28px; padding: 0; font-size: 1.2em; line-height: 28px; border: none; margin: 0; cursor: pointer; flex-shrink: 0; }
+.delete-db-btn:hover { filter: brightness(1.2); }
+.db-select-checkbox { transform: scale(1.4); margin-right: 15px; cursor: pointer; flex-shrink: 0; }
+.difficulty-selector-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.difficulty-selector-wrapper label {
+    font-size: 0.9em;
+    color: var(--color-text-light);
+}
+.difficulty-selector-wrapper select {
+    font-size: 0.9em;
+    padding: 4px 8px; /* Делаем селектор компактнее */
+}
+
+#user-previous-guess-display {
+    color: var(--color-text-light);
+    margin-top: 0;
+    margin-bottom: 10px;
+    min-height: 20px;
+    text-align: center;
+    transition: opacity 0.3s ease;
+}
+
+.settings-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--color-border); text-align: left; }
+.settings-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+select { padding: 8px; border-radius: 8px; border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); }
+.theme-switch-wrapper { display: flex; align-items: center; gap: 10px; }
+.theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+.theme-switch input { display: none; }
+.slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+.slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; }
+input:checked + .slider { background-color: var(--color-primary); }
+input:checked + .slider:before { transform: translateX(24px); }
+
+#dino-image {
+    width: 100%;
+    border-radius: var(--border-radius);
+    /* Это свойство гарантирует, что изображение впишется в рамки, сохранив пропорции */
+    object-fit: contain; 
+}
+
+#timer-display {
+    text-align: right;
+    margin-top: 20px;
+    padding-right: 10px;
+    font-size: 0.9em;
+    color: var(--color-text-light);
+    font-family: 'Courier New', Courier, monospace;
+    opacity: 0.7;
+}
+
+#blitz-timer-display {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 15px;
+}
+
+/* НАЧАЛО БЛОКА АНИМАЦИЙ ДЛЯ БЛИЦ-ТАЙМЕРА */
+@keyframes flash-red-text {
+    50% { color: var(--color-incorrect); }
+}
+
+#blitz-timer-display.low-time {
+    animation: flash-red-text 1s infinite;
+}
+
+#blitz-timer-display.danger-time {
+    color: var(--color-incorrect);
+    animation: none; /* Отключаем предыдущее мерцание */
+}
+
+/* Анимация для "приближающегося" дубликата */
+@keyframes zoom-out-timer {
+    from {
+        transform: scale(1);
+        opacity: 1;
+        color: var(--color-incorrect);
+    }
+    to {
+        transform: scale(4);
+        opacity: 0;
+        color: var(--color-incorrect);
+    }
+}
+
+#fullscreen-fx-container {
+    position: fixed; /* Позиционируется относительно окна браузера */
+    top: 0;
+    left: 0;
+    width: 100vw; /* 100% ширины видимой области */
+    height: 100vh; /* 100% высоты видимой области */
+    pointer-events: none; /* Полностью прозрачен для кликов */
+    overflow: hidden; /* ГЛАВНОЕ: обрезает все, что выходит за экран */
+    z-index: 9999; /* Находится поверх абсолютно всего */
+}
+
+.timer-zoom-effect {
+    position: absolute; /* Позиционируется внутри fullscreen-fx-container */
+    /* top и left будут задаваться через JavaScript */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--color-incorrect);
+    animation: zoom-out-timer 1s ease-out forwards;
+}
+
+/* -> Стили для обратного отсчета */
+.countdown-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10em;
+    font-weight: 700;
+    color: var(--color-primary);
+    opacity: 0;
+    animation: countdown-zoom 1s ease-out forwards;
+}
+
+@keyframes countdown-zoom {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Стили для галереи изображений */
+.image-nav-arrow {
+    background-color: rgba(var(--color-button-secondary-rgb), 0.5); /* Фон с полупрозрачностью */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    line-height: 40px; 
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    z-index: 10;
+    opacity: 0; /* Изначально полностью прозрачны */
+}
+
+/* Показываем стрелки при наведении на ВСЮ ОБЛАСТЬ ГАЛЕРЕИ */
+#image-gallery-wrapper:hover .image-nav-arrow {
+    opacity: 0.7; /* Делаем их полупрозрачными */
+}
+
+.image-nav-arrow:hover {
+    background-color: var(--color-primary);
+    opacity: 1; /* Полностью непрозрачны при наведении на саму стрелку */
+    transform: translateY(-50%) scale(1.1);
+}
+
+.image-nav-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+}
+/* Убираем ненужные правила позиционирования */
+/* #prev-image-btn { left: 10px; } */
+/* #next-image-btn { right: 10px; } */
+
+/* --- ФИНАЛЬНЫЕ СТИЛИ ДЛЯ ТУЛТИПОВ v3 --- */
+.tooltip-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--color-surface);
+    background-color: var(--color-text-light);
+    border-radius: 50%;
+    cursor: help;
+    margin-left: 8px;
+}
+
+.tooltip-text {
+    display: none !important;
+}
+
+.tooltip-popup {
+    position: fixed;
+    z-index: 10001;
+    pointer-events: none;
+    
+    width: 280px;
+    background-color: var(--color-text);
+    color: var(--color-surface);
+    text-align: left;
+    border-radius: 8px;
+    padding: 10px 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    
+    font-family: 'Inter', sans-serif;
+    font-size: 12px; /* Маленький размер */
+    font-weight: 400; 
+    line-height: 1.5;
+}
+
+/* Модификатор для широких тултипов */
+.tooltip-popup.wide {
+    width: auto;
+    white-space: nowrap;
+}
+
+/* Стрелочка */
+.tooltip-popup::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 100%;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--color-text) transparent transparent transparent;
+}
+
+/* Стили для кастомного диалога */
+#custom-confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+#custom-confirm-box {
+    background-color: var(--color-surface);
+    padding: 30px 40px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    max-width: 400px;
+    transform: scale(0.95);
+    transition: transform 0.2s ease-in-out;
+}
+#custom-confirm-overlay.visible {
+    opacity: 1;
+}
+#custom-confirm-overlay.visible #custom-confirm-box {
+    transform: scale(1);
+}
+#custom-confirm-message {
+    font-size: 1.1em;
+    color: var(--color-text);
+    margin-bottom: 25px;
+}
+
+/* НАЧАЛО ФИНАЛЬНОГО БЛОКА ДЛЯ АНИМАЦИИ ЖИЗНЕЙ */
+
+/* --- Анимации для ПОЛНЫХ кружков --- */
+@keyframes lives-flash-bg-red { 50% { background-color: var(--color-incorrect); border-color: var(--color-incorrect); } }
+@keyframes lives-flash-bg-yellow { 50% { background-color: var(--color-almost); border-color: var(--color-almost); } }
+@keyframes lives-flash-bg-green { 50% { background-color: var(--color-correct); border-color: var(--color-correct); } }
+
+/* --- Анимации для ПУСТЫХ кружков --- */
+@keyframes lives-flash-border-red { 50% { border-color: var(--color-incorrect); } }
+@keyframes lives-flash-border-yellow { 50% { border-color: var(--color-almost); } }
+
+/* --- НОВЫЕ АНИМАЦИИ ДЛЯ ПОЛОВИНКИ КРУЖКА (анимируем градиент) --- */
+@keyframes lives-flash-half-red { 50% { background-image: linear-gradient(to right, var(--color-incorrect) 50%, transparent 50%); border-color: var(--color-incorrect); } }
+@keyframes lives-flash-half-yellow { 50% { background-image: linear-gradient(to right, var(--color-almost) 50%, transparent 50%); border-color: var(--color-almost); } }
+@keyframes lives-flash-half-green { 50% { background-image: linear-gradient(to right, var(--color-correct) 50%, transparent 50%); border-color: var(--color-correct); } }
+
+/* --- Анимация тряски --- */
+@keyframes shake-lives { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-3px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+/* --- Анимация пульсации для бонуса --- */
+@keyframes pulse-green { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 10px 15px rgba(40, 167, 69, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); } }
+
+/* --- Применение анимаций --- */
+
+/* Тряска всего контейнера */
+#lives-container.animate-almost,
+#lives-container.animate-incorrect {
+    animation: shake-lives 0.6s ease-in-out;
+}
+
+/* --- Анимации для Almost --- */
+#lives-container.animate-almost .life-filled { animation: lives-flash-bg-yellow 0.6s ease-in-out; }
+#lives-container.animate-almost .life-half { animation: lives-flash-half-yellow 0.6s ease-in-out; }
+#lives-container.animate-almost .life-empty { animation: lives-flash-border-yellow 0.6s ease-in-out; }
+
+/* --- Анимации для Incorrect --- */
+#lives-container.animate-incorrect .life-filled { animation: lives-flash-bg-red 0.6s ease-in-out; }
+#lives-container.animate-incorrect .life-half { animation: lives-flash-half-red 0.6s ease-in-out; }
+#lives-container.animate-incorrect .life-empty { animation: lives-flash-border-red 0.6s ease-in-out; }
+
+/* --- Анимации для Bonus Life --- */
+#lives-container.animate-bonus { animation: pulse-green 0.8s ease-out; }
+#lives-container.animate-bonus .life-filled { animation: lives-flash-bg-green 0.8s ease-out; }
+#lives-container.animate-bonus .life-half { animation: lives-flash-half-green 0.8s ease-out; }
+
+/* КОНЕЦ ФИНАЛЬНОГО БЛОКА ДЛЯ АНИМАЦИИ ЖИЗНЕЙ */
+
+/* -> Стили и анимация для всплывающих очков */
+.score-popup {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2em;
+    font-weight: 700;
+    animation: score-popup-animation 1.5s ease-out forwards;
+}
+
+@keyframes score-popup-animation {
+    0% {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50px); /* Улетает вверх на 50px */
+        opacity: 0;
+    }
+}
+
+/* Уменьшаем отступ для кнопок "Добавить новую" и "Добавить папку" */
+#add-db-button,
+#add-images-button {
+    margin-top: 0px;
+}
+
+/* Новый контейнер для имени и пути */
+.db-name-with-path {
+    flex-grow: 1;
+    margin: 0 10px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Стиль для самого пути */
+.db-path {
+    font-size: 0.75em; /* Делаем текст маленьким */
+    color: var(--color-text-light); /* Используем цвет для второстепенного текста */
+    margin-top: 3px; /* Небольшой отступ сверху от названия папки */
+    white-space: nowrap; /* Предотвращаем перенос строки */
+    overflow: hidden; /* Скрываем то, что не влезает */
+    text-overflow: ellipsis; /* Добавляем троеточие (...) в конце */
+    display: block; /* Важно для правильной работы text-overflow */
+    font-style: italic; /* Сделаем его курсивом, чтобы он еще меньше бросался в глаза */
+}
+
+/* ФИКС: Убираем лишний отступ у названия, когда оно внутри контейнера с путем */
+.db-name-with-path .db-name {
+    margin: 0;
+}
+
+/* --- Стили для достижений (ФИНАЛЬНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ) --- */
+#achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    /* Добавляем отступы, чтобы тени не обрезались */
+    padding: 10px 5px; 
+}
+
+.achievement-item {
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 15px 20px;
+    transition: all 0.3s ease;
+}
+
+.achievement-locked {
+    opacity: 0.6;
+}
+
+/* Делаем текст внутри неполученных достижений блеклым */
+.achievement-locked .achievement-name,
+.achievement-locked .achievement-desc {
+    opacity: 0.7;
+}
+
+.achievement-unlocked {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 12px 0px var(--color-primary-bg);
+}
+
+/* Стили для золотого достижения */
+.achievement-golden {
+    border-color: #FFD700; /* Золотая рамка */
+    /* Статичную тень box-shadow теперь можно убрать, так как она будет управляться анимацией */
+    background: linear-gradient(145deg, var(--color-surface), #fff9e6);
+    /* Применяем нашу анимацию */
+    animation: golden-pulse 2.5s infinite ease-in-out;
+}
+
+/* --- Анимация пульсации для золотого достижения --- */
+@keyframes golden-pulse {
+    0% {
+        /* Начальное состояние - тень почти отсутствует или очень слабая */
+        box-shadow: 0 0 12px 0px rgba(255, 215, 0, 0.15); 
+    }
+    50% {
+        /* Пик пульсации - наше красивое "старое" свечение */
+        box-shadow: 0 0 18px 2px rgba(255, 215, 0, 0.4); 
+    }
+    100% {
+        /* Возврат к начальному состоянию */
+        box-shadow: 0 0 12px 0px rgba(255, 215, 0, 0.15);
+    }
+}
+
+html[data-theme="dark"] .achievement-golden {
+    background: linear-gradient(145deg, var(--color-surface), #4d4327);
+}
+
+.achievement-name {
+    font-weight: 700;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.achievement-desc {
+    font-size: 0.9em;
+    color: var(--color-text-light);
+    line-height: 1.5;
+}
+
+/* --- Стили для всплывающих уведомлений --- */
+#notification-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    /* ИЗМЕНЕНИЕ: Направление колонки - снизу вверх */
+    flex-direction: column-reverse; 
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.notification-toast {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    padding: 15px 25px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 40px var(--box-shadow-color);
+    border-left: 5px solid var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: slideInAndOut 5s ease-in-out forwards;
+}
+
+.notification-toast-icon {
+    font-size: 1.8em;
+    color: var(--color-primary);
+}
+
+.notification-toast-content .title {
+    font-weight: 700;
+    margin: 0;
+    font-size: 1.05em;
+}
+
+.notification-toast-content .message {
+    margin: 3px 0 0 0;
+    font-size: 0.9em;
+    color: var(--color-text-light);
+}
+
+@keyframes slideInAndOut {
+    0% {
+        transform: translateX(calc(100% + 20px));
+        opacity: 0;
+    }
+    15%, 85% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(calc(100% + 20px));
+        opacity: 0;
+    }
+}
+
+/* Если тема темная, фон будет другим */
+html[data-theme="dark"] .achievement-golden {
+    background: linear-gradient(145deg, var(--color-bg), #4d4327);
+}
+
+/* --- Умный контейнер для скролла, который не обрезает тени --- */
+.scroll-container-no-clip {
+    /* 1. Убираем стандартное обрезание */
+    overflow: hidden; 
+    
+    /* 2. Включаем прокрутку, если контент не помещается */
+    overflow-y: auto; 
+    
+    /* 3. Добавляем внутренние отступы, чтобы свечение было видно со всех сторон */
+    padding: 15px;
+    
+    /* 4. Добавляем отрицательные отступы, чтобы компенсировать padding и вернуть ширину */
+    margin: -15px;
+}
+
+/* 1. Анимация, которая содержит и вспышку, и паузу */
+@keyframes hint-pulse-with-delay {
+    /* 
+        Новая логика:
+        - 95% времени - ничего не происходит.
+        - 5% времени - плавная вспышка.
+    */
+
+    /* Обычное состояние */
+    0%, 90% { 
+        color: var(--color-text);
+        text-shadow: none;
+    }
+
+    /* Пик вспышки (через 2.5% после начала, т.е. в середине фазы свечения) */
+    95% { 
+        color: #e6b800;
+        text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+    }
+
+    /* Возврат к обычному состоянию в конце цикла */
+    100% {
+        color: var(--color-text);
+        text-shadow: none;
+    }
+}
+
+/* 2. Класс, который применяет эту анимацию */
+.hint-cell-pulse {
+    animation: hint-pulse-with-delay 30s infinite;
+}
+
+/* --- Универсальный стиль для прокручиваемого контента --- */
+.scrollable-content-area {
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* Высота, чтобы оставить место для заголовка и кнопок */
+    max-height: 65vh; 
+    /* Небольшие отступы, чтобы контент не прилипал к краям */
+    padding: 10px;
+    margin: 15px -10px 0 -10px;
+}
+
+/* Стилизуем полосу прокрутки ТОЛЬКО для наших блоков */
+.scrollable-content-area::-webkit-scrollbar {
+    width: 12px;
+}
+.scrollable-content-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollable-content-area::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 10px;
+    border: 3px solid var(--color-surface);
+}
+.scrollable-content-area::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-button-secondary);
+}
+.scrollable-content-area {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-button-secondary) transparent;
+}
+
+/* Кнопка "i" в углу */
+.info-button {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    /* Используем цвета вторичной кнопки */
+    background-color: var(--color-button-secondary);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    /* Используем стандартную анимацию */
+    transition: all 0.2s ease;
+}
+
+.info-button:hover {
+    /* Убираем кастомное увеличение. Сработает стандартный filter: brightness(1.1) от тега button */
+    transform: none;
+    background-color: var(--color-button-secondary);
+    color: #fff;
+}
+
+/* Ссылки в окне "О проекте" */
+.social-link {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--color-button-secondary);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: filter 0.2s, transform 0.2s;
+}
+
+.social-link:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+}
+
+/* Кнопка выхода в углу меню */
+.exit-button-corner {
+    position: absolute;
+    /* Оптическая компенсация для визуальной симметрии */
+    top: 20px;
+    right: 10px;
+    
+    background: transparent;
+    border: none;
+    color: var(--color-text-light);
+    
+    font-size: 36px;
+    width: 44px;
+    height: 44px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    /* Убираем смещение, если оно мешает */
+    margin: 0;
+    
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.exit-button-corner:hover {
+    opacity: 0.7;
+    color: var(--color-text);
+    /* Стандартный эффект как у всех кнопок игры */
+    filter: brightness(1.1); 
+}
+
+/* Контейнер для кнопок внизу настроек */
+.settings-footer-layout {
+    position: relative;
+    display: flex;
+    justify-content: center; /* Центрируем основную кнопку */
+    align-items: center;
+    margin-top: 40px;
+    width: 100%;
+}
+
+.settings-footer-layout #back-to-menu-from-settings {
+    margin-top: 0;
+}
+
+/* Стили для кнопки сброса (идеальное центрирование по горизонтальной оси) */
+#reset-settings-button {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0; /* Убираем все отступы */
+    
+    padding: 8px 16px;
+    font-size: 0.8em;
+    opacity: 0.5;
+    box-shadow: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Стандартная подсветка при наведении */
+#reset-settings-button:hover {
+    opacity: 1;
+}
+
+#iczn-mini-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-text-light);
+    color: var(--color-primary);
+    font-family: inherit;
+    font-size: 1em;
+    width: 350px; /* Фиксированная ширина, чтобы вместить длинную фразу */
+    padding: 0;
+    margin-top: 5px;
+    outline: none;
+    transition: border-bottom-color 0.3s ease;
+}
+
+#iczn-mini-input:focus {
+    border-bottom-color: var(--color-primary);
+}

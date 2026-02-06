@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="pageTitle">Угадай по роду</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-lang="ru">
+    <!-- НАЧАЛО КОНТЕЙНЕРА ДЛЯ ЭФФЕКТОВ -->
+    <div id="fullscreen-fx-container"></div>
+    <!-- КОНЕЦ КОНТЕЙНЕРА ДЛЯ ЭФФЕКТОВ -->
+    <div id="start-screen" class="container">
+        <!-- Кнопка выхода -->
+        <button id="exit-app-button" class="exit-button-corner">×</button>
+        <h1 data-translate-key="gameTitle">Угадай по роду</h1>
+        <p data-translate-key="gameDescription">Выберите активную базу данных в настройках, чтобы начать игру.</p>
+        <div class="stacked-button-layout">
+            <button id="start-button" data-translate-key="startGameButton" disabled>Начать игру</button>
+            <div class="button-group">
+                <button id="records-button" class="button-secondary" data-translate-key="recordsButton">Рекорды</button>
+                <button id="settings-button" class="button-secondary" data-translate-key="settingsButton">Настройки</button>
+            </div>
+        </div>
+        <!-- НОВАЯ КНОПКА -->
+        <button id="about-button" class="info-button">
+            <span style="font-weight: 700; font-size: 1.4em;">i</span>
+        </button>
+    </div>
+    
+    <div id="game-container" class="container" style="display: none;">
+        <div class="game-controls">
+            <button id="end-game-early-button" data-translate-key="endGameEarlyButton">Завершить досрочно</button>
+            <button id="exit-to-menu-game-button" data-translate-key="exitGameButton">Выход</button>
+        </div>
+        <p id="game-mode-header"></p>
+        <div id="game-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            
+            <!-- Левый блок (для жизней и раундов в других режимах) -->
+            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 100px;">
+                <div id="lives-container" style="display: flex; gap: 5px;"></div>
+                <span id="round-counter"></span>
+            </div>
+
+            <!-- Центральный блок для таймера блица -->
+            <div id="blitz-timer-wrapper" style="position: relative;">
+                <div id="blitz-timer-display" style="display: none;"></div>
+            </div>
+
+            <!-- Правый блок для счета -->
+            <div id="score-container" style="min-width: 100px; text-align: right; font-weight: 600;">
+                <span id="score-label"></span>
+                <span id="score-value-wrapper" style="position: relative; display: inline-block;">
+                    <span id="score-value"></span>
+                    <div id="score-fx-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+                </span>
+            </div>
+        </div>
+        <div class="progress-bar-container" style="display: none;"><div id="progress-bar"></div></div>
+        <p id="game-instruction" data-translate-key="gameInstructionDefault">Назовите видовое название для рода:</p>
+        <div id="user-previous-guess-display"></div>
+        <span id="genus-name">...</span>
+        <div id="species-input-container">
+            <input type="text" class="species-input" data-translate-key="speciesInputPlaceholder" placeholder="Введите вид..." autocomplete="off">
+        </div>
+        <div>
+            <button id="check-button" data-translate-key="checkButton">Проверить</button>
+            <button id="next-button" style="display: none;" data-translate-key="nextButton">Далее</button>
+        </div>
+        <div id="feedback-panel">
+            <div id="feedback-details-container"></div>
+            <div id="final-verdict"></div>
+        </div>
+        <!-- НАЧАЛО ОБНОВЛЕННОГО БЛОКА ДЛЯ ИЗОБРАЖЕНИЙ -->
+        <div id="image-feedback-container" style="display: none; margin-top: 25px;">
+            <!-- Контейнер, который будет ловить наведение мыши -->
+            <div id="image-gallery-wrapper" style="position: relative; margin: 0 auto;">
+                
+                <!-- Этот блок мы НЕ ТРОГАЕМ, он отвечает за расчет высоты. -->
+                <div id="dino-image-wrapper" style="display: flex; align-items: center; justify-content: center;">
+                    <img id="dino-image" src="" alt="Изображение динозавра">
+                </div>
+
+                <!-- Стрелки, которые будут реагировать на :hover родителя -->
+                <button id="prev-image-btn" class="image-nav-arrow" style="display: none; position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">❮</button>
+                <button id="next-image-btn" class="image-nav-arrow" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">❯</button>
+            </div>
+            <p id="dino-image-caption" style="text-align: center; margin-top: 10px; font-style: italic; color: var(--color-text-light);"></p>
+        </div>
+        <!-- КОНЕЦ ОБНОВЛЕННОГО БЛОКА ДЛЯ ИЗОБРАЖЕНИЙ -->
+        <div id="timer-display">00:00</div>
+    </div>
+
+    <div id="end-screen" class="container" style="display: none;">
+        <h2 data-translate-key="gameOverTitle">Игра окончена!</h2>
+        <p id="final-message"></p>
+        <h1 id="final-score"></h1>
+            <div id="blitz-duration-recap" style="display:none; font-size: 0.8em; color: var(--color-text-light);"></div>
+            <p id="blitz-spm-recap" style="display: none; font-size: 1.1em; margin-top: 15px; color: var(--color-text);"></p>
+            <p id="survival-index-recap" style="display: none; font-size: 1.1em; margin-top: 15px; color: var(--color-text);"></p>
+        <div id="results-table-container"></div>
+        <div class="button-group">
+            <button id="restart-button" data-translate-key="restartButton">Сыграть снова</button>
+            <button id="back-to-menu-button" class="button-secondary" data-translate-key="backToMenuButton">В главное меню</button>
+        </div>
+    </div>
+
+    <!-- === НАЧАЛО НОВОГО ЭКРАНА НАСТРОЕК С ВКЛАДКАМИ === -->
+    <div id="settings-screen" class="container" style="display: none; overflow-y: hidden;">
+        <h2 data-translate-key="settingsTitle">Настройки игры</h2>
+        
+        <!-- Переключатель вкладок -->
+        <div class="button-group" style="margin-bottom: 20px; flex-shrink: 0;">
+            <button id="tab-btn-settings" class="button-secondary" data-translate-key="tabGeneral">Основные</button>
+            <button id="tab-btn-databases" class="button-secondary" data-translate-key="tabDatabases">Базы данных</button>
+        </div>
+
+        <!-- Контент для вкладки "Настройки" -->
+        <div id="tab-content-settings" style="width: 100%;">
+            <div class="scrollable-content-area">
+                <div class="settings-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+                    
+                    <!-- Тема -->
+                    <div class="settings-row">
+                        <label for="theme-switch" data-translate-key="themeLabel">Тема оформления:</label>
+                        <div class="theme-switch-wrapper">
+                            <label class="theme-switch">
+                                <input type="checkbox" id="theme-switch">
+                                <span class="slider"></span>
+                            </label>
+                            <span id="theme-text">Светлая</span>
+                        </div>
+                    </div>
+
+                    <!-- Полный экран -->
+                    <div class="settings-row">
+                        <label for="fullscreen-switch" data-translate-key="fullscreenLabel">Полноэкранный режим:</label>
+                        <div class="theme-switch-wrapper">
+                            <label class="theme-switch">
+                                <input type="checkbox" id="fullscreen-switch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Язык -->
+                    <div class="settings-row">
+                        <label for="language-select" data-translate-key="languageLabel">Язык:</label>
+                        <select id="language-select">
+                            <option value="ru">Русский</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+
+                    <!-- Звук Эффекты -->
+                    <div class="settings-row">
+                        <label for="sfx-volume-slider" data-translate-key="sfxVolumeLabel">Громкость эффектов:</label>
+                        <input type="range" id="sfx-volume-slider" min="0" max="100" step="5" value="50">
+                    </div>
+
+                    <!-- Звук Музыка -->
+                    <div class="settings-row">
+                        <label for="music-volume-slider" data-translate-key="musicVolumeLabel">Громкость музыки:</label>
+                        <input type="range" id="music-volume-slider" min="0" max="100" step="5" value="70">
+                    </div>
+
+                    <!-- Режим игры -->
+                    <div class="settings-row">
+                        <div>
+                            <label for="game-mode-select" data-translate-key="gameModeLabelSettings">Режим игры:</label>
+                            <span class="tooltip-icon">i<span class="tooltip-text" data-translate-key="tooltip_gameMode"></span></span>
+                        </div>
+                        <select id="game-mode-select">
+                            <option value="classic" data-translate-key="gameModeClassic">Классика</option>
+                            <option value="blitz" data-translate-key="gameModeBlitz">Блиц</option>
+                            <option value="survival" data-translate-key="gameModeSurvival">Выживание</option>
+                        </select>
+                    </div>
+
+                    <!-- БЛОК: КЛАССИКА -->
+                    <div id="classic-settings">
+                        <div class="settings-row">
+                            <label for="rounds-select" data-translate-key="roundsLabel">Количество раундов:</label>
+                            <select id="rounds-select">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="all" data-translate-key="marathonOption">Марафон (все)</option>
+                            </select>
+                        </div>
+                        <!-- Изображения для классики -->
+                        <div class="settings-row">
+                            <label for="image-toggle-classic" data-translate-key="showImagesLabel">Показывать изображения:</label>
+                            <div class="theme-switch-wrapper">
+                                <label class="theme-switch">
+                                    <input type="checkbox" id="image-toggle-classic">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <label for="timer-switch" data-translate-key="timerLabel">Таймер:</label>
+                            <div class="theme-switch-wrapper">
+                                <label class="theme-switch">
+                                    <input type="checkbox" id="timer-switch">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- БЛОК: БЛИЦ -->
+                    <div id="blitz-settings" style="display: none;">
+                        <div class="settings-row">
+                            <label for="blitz-duration-select" data-translate-key="blitzDurationLabel">Длительность блица:</label>
+                            <select id="blitz-duration-select">
+                                <option value="60" data-translate-key="blitzDuration_1">1 минута</option>
+                                <option value="180" data-translate-key="blitzDuration_3">3 минуты</option>
+                                <option value="300" data-translate-key="blitzDuration_5">5 минут</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- БЛОК: ВЫЖИВАНИЕ -->
+                    <div id="survival-settings" style="display: none;">
+                        <div class="settings-row">
+                            <div>
+                                <label for="survival-lives-select" data-translate-key="survivalLivesLabel">Количество жизней:</label>
+                                <span class="tooltip-icon">i<span class="tooltip-text" data-translate-key="tooltip_survivalLives"></span></span>
+                            </div>
+                            <select id="survival-lives-select">
+                                <option value="9">9</option>
+                                <option value="5">5</option>
+                                <option value="3">3</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                        <!-- Изображения для выживания -->
+                        <div class="settings-row">
+                            <label for="image-toggle-survival" data-translate-key="showImagesLabel">Показывать изображения:</label>
+                            <div class="theme-switch-wrapper">
+                                <label class="theme-switch">
+                                    <input type="checkbox" id="image-toggle-survival">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <div>
+                                <label for="survival-bonus-switch" data-translate-key="survivalBonusLabel">Бонусная жизнь:</label>
+                                <span class="tooltip-icon">i<span class="tooltip-text" data-translate-key="tooltip_survivalBonus"></span></span>
+                            </div>
+                            <div class="theme-switch-wrapper">
+                                <label class="theme-switch">
+                                    <input type="checkbox" id="survival-bonus-switch">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Общие настройки многовидовых родов -->
+                    <div class="settings-row">
+                        <div>
+                            <label for="multi-species-mode" data-translate-key="multiSpeciesModeLabel">Обработка многовидовых родов:</label>
+                            <span class="tooltip-icon">i<span class="tooltip-text" data-translate-key="tooltip_multiSpecies"></span></span>
+                        </div>
+                        <select id="multi-species-mode">
+                            <option value="acceptAny" data-translate-key="acceptAnyOption">Любой вид</option>
+                            <option value="guessOne" data-translate-key="guessOneOption">Конкретный вид</option>
+                            <option value="nameAll" data-translate-key="nameAllOption">Все виды</option>
+                        </select>
+                    </div>
+
+                    <div id="name-all-scoring-settings" class="settings-row" style="display: none;">
+                        <div>
+                            <label for="name-all-scoring-mode" data-translate-key="nameAllScoringLabel">Подсчет баллов:</label>
+                            <span class="tooltip-icon">i<span class="tooltip-text" data-translate-key="tooltip_nameAllScoring"></span></span>
+                        </div>
+                        <select id="name-all-scoring-mode">
+                            <option value="round" data-translate-key="nameAllScoringRound">За раунд</option>
+                            <option value="perSpecies" data-translate-key="nameAllScoringPerSpecies">За каждый вид</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Контент для вкладки "Базы данных" -->
+        <div id="tab-content-databases" style="display: none; width: 100%;">
+            <div class="scrollable-content-area">
+                <div class="settings-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+                    
+                    <!-- Секция: Встроенные базы -->
+                    <h3 data-translate-key="defaultDbHeader">Встроенные базы данных</h3>
+                    <ul id="default-db-list" class="db-list"></ul>
+
+                    <!-- Секция: Пользовательские базы -->
+                    <div class="settings-row" style="margin-bottom: 0;">
+                        <div>
+                            <label data-translate-key="customDbHeader" style="font-size: 1.17em; font-weight: bold;">
+                                Пользовательские базы данных
+                            </label>
+                            <span class="tooltip-icon">i
+                                <span class="tooltip-text" data-translate-key="tooltip_customDb"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <p data-translate-key="customDbSortHint">Добавьте файлы с базами данных.</p>
+                    <ul id="custom-db-list" class="db-list"></ul>
+                    <button id="add-db-button" data-translate-key="addDbButton">Добавить новую</button>
+
+                    <!-- Секция: Пользовательские изображения -->
+                    <div class="settings-section" style="border-top: none; padding-top: 15px; margin-top: 15px;">
+                        <div class="settings-row" style="margin-bottom: 0;">
+                            <div>
+                                <label data-translate-key="customImagesHeader" style="font-size: 1.17em; font-weight: bold;">
+                                    Пользовательские изображения
+                                </label>
+                                <span class="tooltip-icon">i
+                                    <span class="tooltip-text" data-translate-key="tooltip_customImages"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <p data-translate-key="customImagesHint">Добавьте папки с изображениями.</p>
+                        <ul id="custom-images-list" class="db-list"></ul>
+                        <button id="add-images-button" data-translate-key="addImagesButton">Добавить папку</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Общий футер с кнопками -->
+        <div class="settings-footer-layout">
+            <button id="back-to-menu-from-settings" class="button-secondary" data-translate-key="backToMenuButton">В главное меню</button>
+            <button id="reset-settings-button" class="button-secondary" data-translate-key="resetSettingsButton">Сбросить настройки</button>
+        </div>
+    </div>
+    <!-- === КОНЕЦ НОВОГО ЭКРАНА НАСТРОЕК === -->
+
+    <!-- === НАЧАЛО ОБНОВЛЕННОГО ЭКРАНА РЕКОРДОВ И ДОСТИЖЕНИЙ === -->
+    <div id="records-screen" class="container" style="display: none; overflow-y: hidden;">
+        <h2 data-translate-key="recordsTitle">Рекорды</h2>
+        <div class="button-group" style="margin-bottom: 20px;">
+            <button id="tab-btn-records" class="button-secondary" data-translate-key="tabStatistics">Статистика</button>
+            <button id="tab-btn-achievements" class="button-secondary" data-translate-key="tabAchievements">Достижения</button>
+        </div>
+
+        <div id="tab-content-records">
+            <div class="scrollable-content-area">
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: var(--color-primary); margin-top: 0; text-align: left;"><span data-translate-key="gameModeClassic"></span><span data-translate-key="classicUnit" style="font-weight: normal; font-size: 0.8em;"></span></h3>
+                    <div id="records-classic-container"></div>
+                </div>
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: var(--color-primary); margin-top: 0; text-align: left;"><span data-translate-key="gameModeBlitz"></span><span data-translate-key="blitzUnit" style="font-weight: normal; font-size: 0.8em;"></span></h3>
+                    <div id="records-blitz-container"></div>
+                </div>
+                <div>
+                    <h3 style="color: var(--color-primary); margin-top: 0; text-align: left;"><span data-translate-key="gameModeSurvival"></span><span data-translate-key="survivalUnit" style="font-weight: normal; font-size: 0.8em;"></span></h3>
+                    <div id="records-survival-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-content-achievements" style="display: none;">
+            <div class="scrollable-content-area">
+                <ul id="achievements-list"></ul>
+            </div>
+        </div>
+
+        <div class="button-group" style="margin-top: 30px;">
+            <button id="back-to-menu-from-records" class="button-secondary" data-translate-key="backToMenuButton">В главное меню</button>
+        </div>
+    </div>
+    <!-- === КОНЕЦ ОБНОВЛЕННОГО ЭКРАНА РЕКОРДОВ И ДОСТИЖЕНИЙ === -->
+
+    <!-- ЭКРАН "О ПРОЕКТЕ" -->
+    <div id="about-screen" class="container" style="display: none; text-align: center;">
+        <h2 data-translate-key="aboutTitle">Об игре</h2>
+        
+        <div class="scrollable-content-area" style="max-height: 60vh;">
+            <div id="about-content" style="line-height: 1.6; color: var(--color-text);">
+                <!-- Текст подставится из JS -->
+            </div>
+        </div>
+
+        <div class="button-group" style="margin-top: 20px;">
+            <button id="back-from-about-button" class="button-secondary" data-translate-key="backToMenuButton">В главное меню</button>
+        </div>
+    </div>
+
+    <!-- НАЧАЛО ЭКРАНА С ПАСХАЛКОЙ -->
+    <div id="easter-egg-screen" class="container" style="display: none; text-align: center;">
+        <video id="easter-egg-video" width="100%" style="border-radius: var(--border-radius);">
+            <!-- Источник будет задаваться динамически через JavaScript -->
+            <source id="easter-egg-source" src="" type="video/mp4">
+            Ваш браузер не поддерживает тэг video.
+        </video>
+        <button id="back-from-easter-egg" data-translate-key="backToMenuButton" style="margin-top: 20px;">В главное меню</button>
+    </div>
+    <!-- КОНЕЦ ЭКРАНА С ПАСХАЛКОЙ -->
+
+    <!-- === НАЧАЛО БЛОКА УВЕДОМЛЕНИЙ === -->
+    <div id="notification-container"></div>
+    <!-- === КОНЕЦ БЛОКА УВЕДОМЛЕНИЙ === -->
+
+    <!-- ПОДКЛЮЧЕНИЕ ФАЙЛОВ -->
+    <script src="js/data.js"></script>
+    <script src="js/globals.js"></script>
+    <script src="js/utils.js"></script> <!-- НОВАЯ СТРОКА -->
+    <script src="js/storage.js"></script> <!-- НОВАЯ СТРОКА -->
+    <script src="js/ui.js"></script> <!-- НОВАЯ СТРОКА -->
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- НАЧАЛО КАСТОМНОГО ДИАЛОГА ПОДТВЕРЖДЕНИЯ -->
+    <div id="custom-confirm-overlay" style="display: none;">
+        <div id="custom-confirm-box">
+            <p id="custom-confirm-message"></p>
+            <div class="button-group">
+                <button id="custom-confirm-yes" data-translate-key="confirmYes">Да</button>
+                <button id="custom-confirm-no" data-translate-key="confirmNo" style="background-color: var(--color-button-secondary);">Нет</button>
+            </div>
+        </div>
+    </div>
+    <!-- КОНЕЦ КАСТОМНОГО ДИАЛОГА ПОДТВЕРЖДЕНИЯ -->
+
+</body>
+</html>
