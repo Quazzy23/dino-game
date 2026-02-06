@@ -36,7 +36,7 @@ DirExistsWarning=no
 SetupIconFile=D:\Code\Quazzy Inc\dino-game\images\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 OutputDir=D:\Code\Quazzy Inc\dino-game\dist
-OutputBaseFilename=Dino-Game Setup {#MyAppVersion}
+OutputBaseFilename=Dino-Game_setup_{#MyAppVersion}
 
 ; === КРАСОТА: Изображения инсталлятора ===
 WizardStyle=modern
