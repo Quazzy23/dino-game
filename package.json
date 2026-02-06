@@ -1,0 +1,42 @@
+{
+  "name": "dino-game",
+  "version": "1.2.1",
+  "main": "main.js",
+  "description": "A dinosaur species guessing game made with Electron",
+  "author": "Quazzy",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --dir && copy readme.txt dist && copy latest.json dist"
+  },
+  "devDependencies": {
+    "electron": "^28.2.3",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "build": {
+    "appId": "com.quazzy.dinogame",
+    "productName": "Dino-Game",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/",
+      "!dist/",
+      "!out/",
+      "!.git/",
+      "!extra_src",
+      "!images/editing",
+      "!readme.txt",
+      "!installer.iss",
+      "!latest.json"
+    ],
+    "win": {
+      "icon": "images/icon.ico"
+    }
+  }
+}

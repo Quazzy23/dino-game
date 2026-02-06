@@ -1,0 +1,4 @@
+Triceratops	prorsus
+Triceratops	horridus	type
+Stegosaurus	stenops
+Tyrannosaurus	rex
