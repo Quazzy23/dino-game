@@ -27,14 +27,19 @@
 
 ### For Developers
 If you want to run or modify the source code:
-1. Clone the repository:
+1. **Clone the repository:**
    `git clone https://github.com/Quazzy23/dino-game.git`
-2. Install dependencies:
+2. **Install dependencies:**
    `npm install`
-3. Run the app:
+3. **Run the app in development mode:**
    `npm start`
-4. Build the installer:
-   `npm run dist`
+4. **Build the production directory:**
+   `npm run dist`  
+   *(This creates an unpacked version in the `dist/win-unpacked` folder)*
+5. **Create the final installer:**
+   - Install [Inno Setup](https://jrsoftware.org/isdl.php) (Windows).
+   - Open `installer.iss` and choose **Save & Compile Script**.
+   - The final `.exe` will be generated in the `dist/` folder.
 
 ---
 
