@@ -211,7 +211,7 @@ function setupIpcHandlers() {
   // 1. Проверка версии
   ipcMain.handle('check-for-update', async () => {
     return new Promise((resolve) => {
-      const url = 'https://raw.githubusercontent.com/Quazzy23/dino-game/main/latest.json';
+      const url = 'https://raw.githubusercontent.com/Quazzy23/dino-game/refs/heads/main/latest.json';
       https.get(url, (res) => {
         let data = '';
         res.on('data', (chunk) => data += chunk);
