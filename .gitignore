@@ -1,4 +1,6 @@
 node_modules/
 dist/
 .git/
+extra_src/
+crack/
 images/editing/

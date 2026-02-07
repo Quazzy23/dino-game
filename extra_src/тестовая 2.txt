@@ -1,4 +1,0 @@
-Triceratops	prorsus	type
-Triceratops	horridus
-Mei	long
-Arg	hui
