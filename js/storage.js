@@ -118,7 +118,7 @@ async function initializeProgress() {
                 }
             }
             
-            console.log("Система: Прогресс успешно загружен из файла.");
+            console.log("Прогресс успешно загружен из файла.");
         } catch (e) {
             console.error("Ошибка при чтении файла прогресса:", e);
         }

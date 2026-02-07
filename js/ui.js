@@ -221,7 +221,6 @@ async function renderDbList() {
 // --- НАЧАЛО ПОЛНОЙ ЗАМЕНЫ: ИСПРАВЛЕННЫЙ РЕНДЕР РЕКОРДОВ ---
 async function renderRecords() {
     const records = getRecords();
-    console.log("Отладка: Данные для таблицы рекордов:", records);
     const lang = getSettings().language;
     const recordsScreen = document.getElementById('records-screen');
     const classicContainer = document.getElementById('records-classic-container');

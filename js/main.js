@@ -243,21 +243,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ЛОГИКА ОБНОВЛЕНИЙ (Версия берется автоматически из package.json)
     if (window.electronAPI.getAppVersion && window.electronAPI.checkUpdate) {
-        console.log("Система: Проверка обновлений запущена..."); // ЛОГ 1
 
         window.electronAPI.getAppVersion().then(currentVersion => {
-            console.log("Система: Текущая версия приложения:", currentVersion); // ЛОГ 2
+            console.log("Текущая версия приложения:", currentVersion); // ЛОГ 2
 
             window.electronAPI.checkUpdate().then(data => {
                 if (!data) {
-                    console.log("Система: Обновлений не найдено (или файл latest.json недоступен)."); // ЛОГ 3
+                    console.log("Обновлений не найдено (или файл latest.json недоступен)."); // ЛОГ 3
                     return;
                 }
 
-                console.log("Система: Версия на сервере:", data.version); // ЛОГ 4
+                console.log("Версия на сервере:", data.version); // ЛОГ 4
 
                 if (data.version !== currentVersion) {
-                    console.log("Система: Найдено несовпадение! Показываю окно обновления.");
+                    console.log("Доступна новая версия.");
                     
                     showCustomConfirm(updateText, () => {
                         // Логика при нажатии игроком "ОК"
@@ -289,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
                     });
                 } else {
-                    console.log("Система: У вас установлена актуальная версия.");
+                    console.log("Установлена актуальная версия.");
                 }
             });
         }).catch(err => console.error("Update system error:", err));
