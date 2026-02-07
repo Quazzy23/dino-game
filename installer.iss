@@ -24,7 +24,7 @@ UsePreviousLanguage=no
 DisableWelcomePage=no
 
 ; Лицензионное соглашение (твой угарный текст)
-LicenseFile=D:\Code\Quazzy Inc\dino-game\license.txt
+LicenseFile=D:\Code\Quazzy Inc\dino-game\installer_license.txt
 
 ; Настройки папки установки (C:\Program Files\Quazzy\Dino-Game)
 DefaultDirName={autopf}\Quazzy\{#MyAppName}
